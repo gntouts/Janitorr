@@ -65,8 +65,6 @@ class Eltrak:
                         self.deliveredUpdate = update
                         break
 
-
-
 class PhoneNumber:
     def __init__(self, number):
         self.rawPhone = number
