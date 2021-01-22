@@ -6,7 +6,6 @@ import jFuncs
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
-
 if False:
     jFuncs.printBalanceReport()
 
@@ -19,5 +18,5 @@ if True:
         new = Jlib.Order(order['id'],store)
         new.populateWoo(order)
         new.trackWoo()
-        pp.pprint(vars(new.woo))
+        new.insertLocalIfNotExists()
 

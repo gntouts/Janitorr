@@ -106,7 +106,7 @@ class DBOrder(BaseModel):
     tracking_status = pw.TextField(null=True,)
     order_created = pw.DateTimeField(null=True,)
     order_last_update = pw.DateTimeField(null=True,)
-    order_sent = pw.DateTimeField(null=True,)
+    order_scanned = pw.DateTimeField(null=True,)
     order_first_tracked = pw.DateTimeField(null=True,)
     order_delivered = pw.DateTimeField(null=True,)
 
@@ -118,6 +118,9 @@ class WooOrder:
     def __init__(self, orderid, shop):
         self. orderid = orderid
         self.shop = shop
+
+    def update(self, key, value):
+        pass
 
 class Order:
     def __init__(self, orderid, shop):
@@ -142,9 +145,9 @@ class Order:
             elif 'wpslash_voucher_courier_tracking' == entry['key']:
                self.woo.tracking= entry['value']
         self.woo.tracking_status= ''
-        self.woo.order_created = datetime.strptime(orderData['date_created'], '%Y-%m-%dT%H:%M:%S')
-        self.woo.order_last_update = datetime.strptime(orderData['date_modified'], '%Y-%m-%dT%H:%M:%S')
-        self.woo.order_sent = getOrderScanned(self.shop, self.orderid)
+        self.woo.order_created = datetime.strptime(orderData['date_created'], '%Y-%m-%dT%H:%M:%S')- timedelta(hours=1)
+        self.woo.order_last_update = datetime.strptime(orderData['date_modified'], '%Y-%m-%dT%H:%M:%S')- timedelta(hours=1)
+        self.woo.order_scanned = getOrderScanned(self.shop, self.orderid)
         self.woo.order_first_tracked = ''
         self.woo.order_delivered =''
 
@@ -160,9 +163,33 @@ class Order:
                 self.woo.order_first_tracked=datetime.strptime(first, '%Y-%m-%dT%H:%M:%S')
             track.isDelivered()
             if track.delivered:
-                delivered = track.deliveredUpdate['datetime']
+                delivered = track.deliveredUpdate
                 self.woo.tracking_status= 'ΠΑΡΑΔΟΘΗΚΕ'
                 self.woo.order_delivered=datetime.strptime(delivered['datetime'], '%Y-%m-%dT%H:%M:%S')
+
+    def checkIfLocal(self):
+        self.local = DBOrder.get_or_none(DBOrder.orderid == self.orderid, DBOrder.shop == self.shop)
+        return self.local
+    
+    def insertLocalIfNotExists(self):
+        self.local = DBOrder.get_or_none(DBOrder.orderid == self.orderid, DBOrder.shop == self.shop)
+        if self.local == None:
+            self.local = DBOrder.create(orderid=self.woo.orderid,
+                shop = self.woo.shop,
+                client = self.woo.client,
+                phone = self.woo.phone,
+                order_status = self.woo.order_status,
+                courier = self.woo.courier,
+                tracking = self.woo.tracking,
+                tracking_status = self.woo.tracking_status,
+                order_created = self.woo.order_created,
+                order_last_update = self.woo.order_last_update,
+                order_scanned = self.woo.order_scanned,
+                order_first_tracked = self.woo.order_first_tracked,
+                order_delivered = self.woo.order_delivered)
+
+
+
 
 class WooScraper:
     def __init__(self, stores):
@@ -196,21 +223,5 @@ class WooScraper:
                     self.ordersScraped.append(each)
             return self.ordersScraped
 
-# new = Order(each['id'], store['name'])
-# new.populateWoo(each)
-# new.trackWoo()
-# print(vars(new.woo))
-# # db.connect()
-
-
-# db.create_tables([DBOrder, NotificationLog])
-# test = DBOrder.create(orderid='945', shop='homeone')
-
-# new = Order(orderid = '945', shop="homeone")
-
-# print(new.orderid)
-# print(new.local.orderid)
-
-# test = DBOder.create(orderid='945', shop='homeone')
-# print(dir(test))
-
+db.connect()
+db.create_tables([DBOrder, NotificationLog])
