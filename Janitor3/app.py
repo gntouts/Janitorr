@@ -1,22 +1,24 @@
 from jlib import Balance
 from woo import Jlib
 from config import shops, sms_token, stores
-# from jFuncs import printBalanceReport
 import jFuncs
 import pprint
-pp = pprint.PrettyPrinter(indent=4)
+from timeit import default_timer as timer
+# from jFuncs import printBalanceReport
 
-if False:
-    jFuncs.printBalanceReport()
+jFuncs.getOrdersDeliveredLastDays(2)
+# pp = pprint.PrettyPrinter(indent=4)
 
-if True:
-    orders = jFuncs.scrapeWooOrders(5)
+# if False:
+#     jFuncs.printBalanceReport()
 
-    for order in orders:
-        # print(order)
-        store =  order['_links']['collection'][0]['href'].split('https://')[1].split('.gr')[0]
-        new = Jlib.Order(order['id'],store)
-        new.populateWoo(order)
-        new.trackWoo()
-        new.insertLocalIfNotExists()
+# if True:
+#     orders = jFuncs.scrapeWooOrders(3)
+#     print('Multithreading')
+#     start = timer()
+#     jFuncs.bulkSaveUpdate(orders)
+#     end = timer()
+
+#     print(end-start)
+
 

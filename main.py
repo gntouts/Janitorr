@@ -6,7 +6,7 @@ from timeit import default_timer as timer
 kin = '6956084516'
 if True:
     print('scraping orders')
-    scraper = jt.WooScraper(70)
+    scraper = jt.WooScraper(88)
     raw = scraper.scrapeRawOrders()
     excluded = scraper.excludeOrdersByStatus(
         ['cancelled', 'failed', 'deliverycompleted', 'completed', 'refunded'])
@@ -52,7 +52,7 @@ if True:
     print(stopT-startT)
 
 
-if False:
+if True:
 # ITERATE OVER LOCAL DB. IF ORDERS ARE DELIVERED, MARK THEM COMPLETED IN WOO AND DELETE FROM LOCAL DB
 # IF TRACKING STATUS [APWN, ...] SEND NOTIFICATION SMS :: TODO
 # IF TRACKING STATUS != NONE AND ORDERS_STATUS != exei-apostalei:
@@ -86,7 +86,7 @@ if False:
                     c2+=1
                 except:
                     print(order.orderid)
-            elif order.order_status in ['adynamia-epik','out-of-stock', 'pending', 'anamoni-paralavis', 'on-hold', 'se-anamoni-katath']:
+            elif order.order_status in ['adynamia-epik','out-of-stock', 'pending', 'on-hold', 'se-anamoni-katath']:
                 
                 delta = datetime.now() - datetime.strptime(order.date_modified.split('T')[
                                         0],  "%Y-%m-%d")

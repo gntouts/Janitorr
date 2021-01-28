@@ -104,6 +104,7 @@ class DBOrder(BaseModel):
     courier = pw.TextField(null=True,)
     tracking = pw.TextField(null=True,)
     tracking_status = pw.TextField(null=True,)
+    active = pw.TextField(null=True,)
     order_created = pw.DateTimeField(null=True,)
     order_last_update = pw.DateTimeField(null=True,)
     order_scanned = pw.DateTimeField(null=True,)
@@ -115,25 +116,41 @@ class DBOrder(BaseModel):
         primary_key = pw.CompositeKey('orderid', 'shop')
 
 class WooOrder:
-    def __init__(self, orderid, shop):
-        self. orderid = orderid
+    def __init__(self, orderid, shop, store_data):
+        self.orderid = orderid
         self.shop = shop
+        self.store_data = store_data
 
     def update(self, key, value):
-        pass
+        url = 'orders/{}'.format(str(self.orderid))
+        wcapi = API(
+            url=self.store_data['WP_API_URL'],
+            consumer_key=self.store_data['WP_API_CK'],
+            consumer_secret=self.store_data['WP_API_CS'],
+            wp_api=self.store_data['WP_API'],
+            version=self.store_data['VERSION']
+        )
+        data = {str(key): str(value)}
+        old = wcapi.get(url).json()[str(key)]
+        if str(old) != str(value):
+            wcapi.put(url, data)
 
 class Order:
-    def __init__(self, orderid, shop):
+    def __init__(self, orderid, shop, store_data):
         self.orderid = orderid
         self.shop = shop
         # CHECK IF IN LOCAL STORAGE AND LOAD IF FOUND ELSE LOCAL = NONE
         # self.local = DBOrder.get_or_none(
         #     DBOrder.orderid == orderid, DBOrder.shop == shop)
         # RETRIEVE WOOCOMMERCE DATA
-        self.woo = WooOrder(self.orderid, self.shop)
+        self.woo = WooOrder(self.orderid, self.shop, store_data)
     
     def populateWoo(self, orderData):
         self.woo.order_status= orderData['status']
+        if orderData['status'] in ['cancelled', 'failed', 'deliverycompleted', 'completed', 'refunded']:
+            self.woo.active = 'No'
+        else:
+            self.woo.active = 'Yes'
         self.woo.client= orderData['billing']['first_name'].strip() + ' ' + orderData['billing']['last_name'].strip()
         self.woo.phone= PhoneNumber(orderData['billing']['phone']).validPhone
         self.woo.courier= ''
@@ -181,13 +198,13 @@ class Order:
                 order_status = self.woo.order_status,
                 courier = self.woo.courier,
                 tracking = self.woo.tracking,
+                active = self.woo.active,
                 tracking_status = self.woo.tracking_status,
                 order_created = self.woo.order_created,
                 order_last_update = self.woo.order_last_update,
                 order_scanned = self.woo.order_scanned,
                 order_first_tracked = self.woo.order_first_tracked,
                 order_delivered = self.woo.order_delivered)
-
 
 
 
@@ -220,8 +237,9 @@ class WooScraper:
                 url += '&page='+str(pg)
                 orders = wcapi.get(url).json()
                 for each in orders:
+                    each['store_data']=store
                     self.ordersScraped.append(each)
-            return self.ordersScraped
+        return self.ordersScraped
 
 db.connect()
 db.create_tables([DBOrder, NotificationLog])
