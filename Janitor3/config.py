@@ -20,7 +20,7 @@ stores = [{'name': 'homeone',
            'VERSION': 'wc/v3'
            },
 
-          {'kidstoys': 'familystore',
+          {'kidstoys': 'kidstoys',
            'WP_API_CK': 'ck_07d5ee96047f66d72f9d2a9b15c2e4fd896fced1',
            'WP_API_CS': 'cs_5db00cad6afb6eb10c45ea4d5bef0873d1fcbc0c',
            'WP_API_URL': 'https://kidstoys.gr',

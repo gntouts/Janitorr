@@ -6,14 +6,17 @@ import pprint
 from timeit import default_timer as timer
 # from jFuncs import printBalanceReport
 
-jFuncs.getOrdersDeliveredLastDays(2)
-# pp = pprint.PrettyPrinter(indent=4)
+# jFuncs.getOrdersDeliveredLastDays(2)
+pp = pprint.PrettyPrinter(indent=4)
 
 # if False:
 #     jFuncs.printBalanceReport()
 
+jFuncs.sendSmsAndCreateCsv()
+
+exit()
 if True:
-    orders = jFuncs.scrapeWooOrders(3)
+    orders = jFuncs.scrapeWooOrders(20)
     print('Multithreading')
     start = timer()
     jFuncs.bulkSaveUpdate(orders)

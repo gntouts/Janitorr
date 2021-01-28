@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from woocommerce import API
 from tqdm import tqdm
 import requests
+from smsapi.client import SmsApiComClient
+import json
 
 db = pw.SqliteDatabase('janitordb.db')
 
@@ -87,6 +89,35 @@ class PhoneNumber:
 class BaseModel(pw.Model):
     class Meta:
         database = db
+
+
+class NotificationSMS:
+    def __init__(self, phone, sender='Homeone.gr', token):
+        self.sender = sender
+        self.phone = phone
+        try:
+            self.client = SmsApiComClient(
+                access_token=token)
+        except:
+            self.client = None
+
+    def createSMSBody(self, body, args):
+        try:
+            self.SMSBody = body.format(*args)
+        except:
+            self.SMSBody = None
+
+    def sendSms(self):
+        if self.client and self.SMSBody:
+            try:
+                self.results = self.client.sms.send(
+                    to=self.phone, message=self.SMSBody, normalize="1", from_=self.sender)
+                self.sent = True
+            except:
+                self.sent = False
+        else:
+            self.sent = False
+
 
 class NotificationLog(BaseModel):
     id = pw.AutoField()
