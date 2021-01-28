@@ -28,27 +28,32 @@ def saveOrUpdateOrder(order):
         if new.woo.tracking_status in ['Η ΑΠΟΣΤΟΛΗ ΠΑΡΑΔΟΘΗΚΕ', 'ΠΑΡΑΔΟΘΗΚΕ', 'ΠΑΡΑΔΟΣΗ']:
             new.woo.update('status', 'deliverycompleted')
             new.woo.order_status='deliverycompleted'
+            new.woo.active = 'No'
         elif new.woo.tracking_status != '' and new.woo.order_status not in ['cancelled', 'failed', 'deliverycompleted', 'completed', 'refunded']:
             new.woo.update('status', 'exei-apostalei')
             new.woo.order_status='exei-apostalei'
-        elif new.woo.order_status in ['adynamia-epik','out-of-stock', 'pending', 'on-hold', 'se-anamoni-katath']:
+        elif new.woo.order_status in ['adynamia-epik','out-of-stock', 'pending', 'on-hold', 'se-anamoni-katath'] and new.woo.tracking_status == '':
             delta = datetime.now() - datetime.strptime(order.date_modified.split('T')[0],  "%Y-%m-%d")
             if delta.days > 35:
                 new.woo.update('status', 'failed')
                 new.woo.order_status='failed'
                 new.woo.active = 'No'
-        elif new.woo.tracking_status in ['ΑΓΝΩΣΤΟΣ', 'ΑΠΩΝ', 'ΑΠΟΣΤΟΛΗ ΣΜΣ', 'ΚΤΛ']:
-            # notify client via sms
-            pass
-        else:
-            pass
-    else:
-        pass
     new.checkIfLocal()
     if new.local != None:
         new.local.save()
     else:
         new.insertLocalIfNotExists()
+
+    if new.local.tracking_status in ['ΠΡΟΣ ΠΑΡΑΔΟΣΗ', 'ΑΠΟΣΤΟΛΗ ΕΝΗΜΕΡΩΣΗΣ (SMS)', 'ΕΝΗΜΕΡΩΣΗ ΑΠΑΡΑΔΟΤΗΣ ΑΠΟΣΤΟΛΗΣ', 'ΠΑΡΑΛΑΒΗ ΑΠΟ ΣΤΑΘΜΟ - ΕΝΤΟΛΗ ΠΕΛΑΤΗ', 'Η ΑΠΟΣΤΟΛΗ ΠΑΡΑΜΕΝΕΙ ΣΤΟ ΣΤΑΘΜΟ', 'ΑΠΩΝ', 'ΑΓΝΩΣΤΟΣ ΠΑΡΑΛΗΠΤΗΣ'] and new.local.tracking_status != '' and new.local.courier == 'speedex':
+            # check if sms was sent. if not send sms and log
+            pass
+    
+    if new.local.tracking_status not in ['ΠΑΡΑΔΟΘΗΚΕ', 'ΕΠΙΣΤΡΟΦΗ ΑΠΑΡΑΔΟΤΟΥ', '']:
+        # if day.now()-date
+        pass
+    
+
+    
 
 def bulkSaveUpdate(orders):
     threads = min(MAX_THREADS, len(orders))

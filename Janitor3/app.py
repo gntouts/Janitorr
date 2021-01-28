@@ -12,13 +12,13 @@ jFuncs.getOrdersDeliveredLastDays(2)
 # if False:
 #     jFuncs.printBalanceReport()
 
-# if True:
-#     orders = jFuncs.scrapeWooOrders(3)
-#     print('Multithreading')
-#     start = timer()
-#     jFuncs.bulkSaveUpdate(orders)
-#     end = timer()
+if True:
+    orders = jFuncs.scrapeWooOrders(3)
+    print('Multithreading')
+    start = timer()
+    jFuncs.bulkSaveUpdate(orders)
+    end = timer()
 
-#     print(end-start)
+    print(end-start)
 
 

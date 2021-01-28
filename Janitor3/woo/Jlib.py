@@ -107,6 +107,7 @@ class DBOrder(BaseModel):
     active = pw.TextField(null=True,)
     order_created = pw.DateTimeField(null=True,)
     order_last_update = pw.DateTimeField(null=True,)
+    order_last_tracked = pw.DateTimeField(null=True,)
     order_scanned = pw.DateTimeField(null=True,)
     order_first_tracked = pw.DateTimeField(null=True,)
     order_delivered = pw.DateTimeField(null=True,)
@@ -166,6 +167,7 @@ class Order:
         self.woo.order_last_update = datetime.strptime(orderData['date_modified'], '%Y-%m-%dT%H:%M:%S')- timedelta(hours=1)
         self.woo.order_scanned = getOrderScanned(self.shop, self.orderid)
         self.woo.order_first_tracked = ''
+        self.woo.order_last_tracked = ''
         self.woo.order_delivered =''
 
     def trackWoo(self):
@@ -175,6 +177,7 @@ class Order:
             last = track.getLastState()
             if last!='No data':
                  self.woo.tracking_status= last['status']
+                 self.woo.order_last_tracked = datetime.strptime(last['datetime'], '%Y-%m-%dT%H:%M:%S')
             if first != 'No data':
                 first = first['datetime']
                 self.woo.order_first_tracked=datetime.strptime(first, '%Y-%m-%dT%H:%M:%S')
@@ -202,6 +205,7 @@ class Order:
                 tracking_status = self.woo.tracking_status,
                 order_created = self.woo.order_created,
                 order_last_update = self.woo.order_last_update,
+                order_last_tracked = self.woo.order_last_tracked,
                 order_scanned = self.woo.order_scanned,
                 order_first_tracked = self.woo.order_first_tracked,
                 order_delivered = self.woo.order_delivered)
